@@ -1,0 +1,99 @@
+import re
+import json
+import random
+
+# Load FAQ Dataset
+try:
+    with open('faqs.json', 'r') as f:
+        FAQ_DATA = json.load(f)
+except FileNotFoundError:
+    FAQ_DATA = {}
+    print("[Warning] faqs.json not found, using default intents.")
+
+# Intent Definitions
+INTENTS = {
+    "greeting": {
+        "patterns": [r"\b(hi|hello|hey|good morning|good afternoon)\b"],
+        "responses": ["Hello! I am your Loan Assistant. How can I help you today?", "Hi there! Ask me about our hours, loans, or pricing."]
+    },
+    "exit": {
+        "patterns": [r"\b(bye|exit|quit|goodbye|see ya)\b"],
+        "responses": ["Goodbye! Have a great day.", "Thank you for chatting. Bye!"]
+    }
+}
+
+# Merge FAQ_DATA into INTENTS
+for intent_name, data in FAQ_DATA.items():
+    INTENTS[intent_name] = {
+        "patterns": data["patterns"],
+        "responses": [data["response"]]
+    }
+
+def normalize_input(text):
+    """Suggested Approach Step 3: Normalize user input"""
+    return text.lower().strip()
+
+def detect_intents(user_input):
+    """Multi-intent recognition using regex"""
+    detected = []
+    normalized = normalize_input(user_input)
+    
+    for intent, data in INTENTS.items():
+        for pattern in data["patterns"]:
+            if re.search(pattern, normalized, re.IGNORECASE):
+                detected.append(intent)
+                break # Avoid duplicate detection for same intent
+    return detected
+
+def get_response(intent):
+    return random.choice(INTENTS[intent]["responses"])
+
+def main():
+    """Conversational State Management: greeting -> intent identification -> resolution -> exit"""
+    print("="*50)
+    print("Rule-Based Loan Support Chatbot (Type 'bye' to exit)")
+    print("="*50)
+    
+    # Initial greeting state
+    print("Bot:", get_response("greeting"))
+    
+    while True:
+        try:
+            user_input = input("\nYou: ")
+            
+            if not user_input.strip():
+                print("Bot: Please type something so I can help you.")
+                continue
+
+            intents_found = detect_intents(user_input)
+
+            # State: Exit
+            if "exit" in intents_found:
+                print("Bot:", get_response("exit"))
+                break
+
+            # State: Resolution
+            if intents_found:
+                # Remove greeting/exit from display if multiple intents
+                intents_to_answer = [i for i in intents_found if i not in ["greeting", "exit"]]
+                if not intents_to_answer and "greeting" in intents_found:
+                    intents_to_answer = ["greeting"]
+                
+                print(f"Bot: I detected {len(intents_to_answer)} intent(s): {', '.join(intents_to_answer)}")
+                for intent in intents_to_answer:
+                    print(f"Bot: {get_response(intent)}")
+            else:
+                # State: Fallback handling
+                print("Bot: I'm sorry, I didn't understand that. I can help with:")
+                print(" - Business Hours (e.g., 'What are your hours?')")
+                print(" - Product FAQs (e.g., 'What loans do you offer?')")
+                print(" - Pricing, Documents, Cancellation")
+
+        except KeyboardInterrupt:
+            print("\nBot: Chat interrupted. Goodbye!")
+            break
+        except Exception as e:
+            print(f"Bot: Oops, an error occurred: {e}. Let's continue.")
+
+if __name__ == "__main__":
+    main()
