@@ -1,0 +1,125 @@
+
+import os
+import shutil
+
+def organize_files(directory):
+    # Map file extensions to category folders
+    extension_map = {
+        ".pdf": "Documents",
+        ".doc": "Documents",
+        ".docx": "Documents",
+        ".txt": "Documents",
+        ".xls": "Documents",
+        ".xlsx": "Documents",
+        ".ppt": "Documents",
+        ".pptx": "Documents",
+
+        ".jpg": "Images",
+        ".jpeg": "Images",
+        ".png": "Images",
+        ".gif": "Images",
+        ".bmp": "Images",
+
+        ".mp4": "Videos",
+        ".mkv": "Videos",
+        ".avi": "Videos",
+        ".mov": "Videos",
+
+        ".zip": "Archives",
+        ".rar": "Archives",
+        ".7z": "Archives",
+        ".tar": "Archives",
+
+        ".py": "Code",
+        ".java": "Code",
+        ".c": "Code",
+        ".cpp": "Code",
+        ".html": "Code",
+        ".css": "Code",
+        ".js": "Code"
+    }
+
+    total_files = 0
+    moved_files = 0
+    skipped_files = 0
+
+    try:
+        
+        for filename in os.scandir(directory):
+            if not filename.is_file():
+                continue
+
+            total_files += 1
+
+            try:
+                extension = os.path.splitext(filename.name)[1].lower()
+
+                
+                category = extension_map.get(extension, "Others")
+                destination_folder = os.path.join(
+                    directory, category
+                )
+
+                
+                os.makedirs(destination_folder, exist_ok=True)
+
+                source_path = filename.path
+                destination_path = os.path.join(
+                    destination_folder, filename.name
+                )
+
+                
+                if os.path.exists(destination_path):
+                    name, ext = os.path.splitext(filename.name)
+                    counter = 1
+
+                    while os.path.exists(destination_path):
+                        new_name = f"{name}_{counter}{ext}"
+                        destination_path = os.path.join(
+                            destination_folder, new_name
+                        )
+                        counter += 1
+
+                
+                shutil.move(source_path, destination_path)
+                moved_files += 1
+
+                print(
+                    f"Moved: {filename.name} -> "
+                    f"{category}/{os.path.basename(destination_path)}"
+                )
+
+            except PermissionError:
+                skipped_files += 1
+                print(f"Permission denied: {filename.name}")
+
+            except FileExistsError:
+                skipped_files += 1
+                print(f"File already exists: {filename.name}")
+
+            except OSError as error:
+                skipped_files += 1
+                print(f"Error moving {filename.name}: {error}")
+
+    except FileNotFoundError:
+        print("Error: The specified directory does not exist.")
+        return
+
+    except PermissionError:
+        print("Error: Permission denied accessing the directory.")
+        return
+
+    
+    print("\n========== EXECUTION SUMMARY ==========")
+    print(f"Total files inspected: {total_files}")
+    print(f"Files relocated:       {moved_files}")
+    print(f"Files skipped/errors:  {skipped_files}")
+    print("=======================================")
+
+
+if __name__ == "__main__":
+    folder = input(
+        "Enter the directory path to organize: "
+    ).strip().strip('"')
+
+    organize_files(folder)
