@@ -1,0 +1,22 @@
+{
+  "business_hours": {
+    "patterns": ["hours", "open", "close", "timing", "when.*open"],
+    "response": "We are open Mon-Fri 9AM-6PM and Sat 10AM-4PM. Closed on Sundays."
+  },
+  "pricing": {
+    "patterns": ["price", "cost", "how much", "pricing", "fee"],
+    "response": "Our loan processing fee is $50. Interest rates start from 8.5% per annum based on your credit profile."
+  },
+  "product_faq": {
+    "patterns": ["loan", "product", "services", "what.*offer", "types of loan"],
+    "response": "We offer Personal Loans, Business Loans, Student Loans, and Mortgage Loans up to $50,000."
+  },
+  "shipping": {
+    "patterns": ["document", "delivery", "how long.*approval"],
+    "response": "Loan approval takes 24-48 hours after all documents are submitted."
+  },
+  "returns": {
+    "patterns": ["return", "refund", "cancel.*loan"],
+    "response": "You can cancel your loan application within 7 days without any penalty."
+  }
+}
